@@ -3,7 +3,8 @@ name: tscanplus
 description: >-
   Operates TscanPlus security scanner via MCP tools or CLI for authorized targets only.
   Use when the user mentions TscanPlus, port/URL/POC/subdomain scanning, MCP integration,
-  ip_scan, tscan_scan, or recon on IPs, domains, or URLs in any AI assistant with MCP support.
+  ip_scan, tscan_scan, ak_verify, cloud AK leak credential check, or recon on IPs, domains,
+  or URLs in any AI assistant with MCP support.
 ---
 
 # TscanPlus 扫描助手
@@ -34,6 +35,7 @@ TscanPlus / CLI 集成八大安全检测模块：
 | JS 敏感信息 | `js` | `js_scan` | JS 文件中密钥、接口等 |
 | 子域名 | `domain` | `subdomain_scan` | 字典 + 可选 API（key 在 config.yaml） |
 | 空间测绘 | `cyber` | `cyber_search` | Hunter/FOFA 等（引擎在 config.yaml） |
+| AK 泄露验证 | —（GUI AK管理） | `ak_verify` | OSS/云主机/微信/钉钉/飞书/地图/海康萤石/听云/百度人脸/绿盟 凭据 API 验证 |
 
 **多模块联动**使用 `tscan_scan`，`modules` 对应 `-m`，流程与 GUI 项目管理一致：
 
@@ -61,6 +63,7 @@ TscanPlus / CLI 集成八大安全检测模块：
 | 子域名 | `subdomain_scan` | `domains`；API 需 config |
 | 空间测绘 | `cyber_search` | `query` 对齐 `-ck` |
 | 多阶段、结果传递 | `tscan_scan` | 大任务可分阶段执行 |
+| 云 AK 泄露验证 | `ak_verify` | `kind=oss/server/wechat/dingtalk/feishu/map/hikys/tingyun/baiduface/nsfocus` |
 
 ## 通用参数（MCP / CLI）
 
@@ -212,7 +215,71 @@ POC 路径在 `config.yaml`（xray 1.0 格式），与 GUI 一致。
 
 `tscan_scan` 中用 `cyber_query` 传查询内容，`cyber_field` 传上表字段类型（默认 `domain`）。
 
-### 9. 综合扫描 `tscan_scan`
+### 9. AK 泄露 API 验证 `ak_verify`（GUI「AK管理」）
+
+对齐 GUI **AK管理** 全部 Tab：用官方 API 校验泄露凭据是否仍可用。
+
+**`kind` 一览：**
+
+| `kind` | GUI Tab | 验证方式 |
+|--------|---------|----------|
+| `oss` | OSS存储管理 | 列存储桶 |
+| `server` | 云主机管理 | 列举实例 |
+| `wechat` | 微信利用 | 获取 AccessToken |
+| `dingtalk` | 钉钉利用 | 获取 AccessToken |
+| `feishu` | 飞书利用 | 获取 tenant_access_token |
+| `map` | 地图相关 | 调用地图 API（默认地理编码） |
+| `hikys` | 海康萤石 | 云眸/iSecure/萤石验活 |
+| `tingyun` | 听云 | 获取/探测 AccessToken |
+| `baiduface` | 百度人脸 | 获取 AccessToken（可选人脸检测） |
+| `nsfocus` | 绿盟巡检 | UTS 登录 Token / RSAS Basic 编码 |
+
+**通用参数：**
+
+| MCP 参数 | 默认 | 说明 |
+|----------|------|------|
+| `kind` | 必填 | 见上表 |
+| `access_key` | 多数必填 | 各模块主键（见下「字段映射」） |
+| `secret_key` | 多数必填 | 各模块密钥 |
+| `fake_ip` | — | 伪造客户端 IP（微信/钉钉/飞书/地图/海康/听云/百度/绿盟） |
+| `include_token` | `true` | 是否返回 access_token（敏感） |
+| `body_limit` | `2000` | 响应 body 截断，最大 `8000` |
+
+**字段映射（`access_key` / `secret_key`）：**
+
+| `kind` | `access_key` | `secret_key` | 其他关键参数 |
+|--------|--------------|--------------|--------------|
+| `oss` | AccessKey | SecretKey | `provider` 必填；`session_token`/`ext_json`/`include_details` |
+| `server` | AccessKey | SecretKey | `provider` 必填；`session_token`/`include_details` |
+| `wechat` | AppID / CorpID | AppSecret / CorpSecret | `mode`: `oa`（默认）/`mini`/`work` |
+| `dingtalk` | AppKey | AppSecret | `mode`: `standard`（默认）/`exclusive`；专属需 `domain` |
+| `feishu` | App ID | App Secret | 可选 `base_url` |
+| `map` | API Key | — | `service`（默认 `amap_geocode`）；`origin`/`destination` |
+| `hikys` | ClientID / AppKey | ClientSecret / AppSecret | `provider`: `hikcloud`/`isecure`/`ys7`；isecure 需 `host`；可选 `action`/`fetch_token` |
+| `tingyun` | API Key | Secret Key | `host` 必填；或只传 `access_token` 探测 |
+| `baiduface` | API Key | Secret Key | 可选 `image`（Base64，继续人脸检测） |
+| `nsfocus` | 用户名 | 密码 | `mode`: `uts`（默认，需 `base_url`）/`scanner`（RSAS Basic） |
+
+**OSS / 云主机 `provider`：**
+
+| `kind` | `provider` |
+|--------|------------|
+| `oss` | `aliyun` `tencent` `huawei` `tianyi` `jdcloud` `ksyun` `aws` `minio` `baidu` `qiniu` `yidong` `liantong` `qingcloud` `upyun` |
+| `server` | `aliyun` `tencent` `jdcloud` `huawei` `aws` `ucloud` `baidu` `volcengine` |
+
+**地图 `service`：** `amap_walking` `amap_geocode` `amap_mp_regeocode` `tianditu_staticimage` `tianditu_search` `tianditu_wmts` `baidu_web_search` `baidu_ios_search`
+
+**响应要点（`data`）：**
+
+- `valid`：凭据是否可用
+- 多数模块：`token`（可关）、`body`、`error`
+- `oss`：`bucket_count`、可选 `buckets`
+- `server`：`region_count`、`instance_count`、可选 `instances`
+- 凭据无效时仍返回 JSON（`success: true`，`valid: false`）；参数错误才是工具级错误
+
+**授权注意：** 仅验证用户明确授权范围内的凭据；不要在对话中完整回显 SecretKey / AppSecret。
+
+### 10. 综合扫描 `tscan_scan`
 
 在单模块参数基础上，常用额外字段：
 
@@ -342,6 +409,7 @@ GUI：**AI 辅助 → MCP 服务配置** 可选择传输模式（Streamable HTTP
 2. **子域 → 端口 → Web：** `subdomain_scan` → `tscan_scan`（`modules=port,url`）→ 按需 POC
 3. **测绘 → 扫描：** `cyber_search` → 提取 IP/URL → 用户确认 → `ip_scan` / `url_scan`
 4. **单项目持续：** 全程 `project=pentest-xx`，阶段结束用 `fresh_project=true` 重扫
+5. **AK 泄露验证：** 发现密钥 → `ak_verify`（按来源选 `kind`：云 AK 用 `oss`/`server`，微信钉钉飞书/地图/海康/听云/百度人脸/绿盟对应各自 kind）→ 汇报 `valid` 与摘要
 
 ## 排错
 
@@ -352,6 +420,7 @@ GUI：**AI 辅助 → MCP 服务配置** 可选择传输模式（Streamable HTTP
 | 卡在 `xxx open` | 升级版本；重启 `mcp serve` 或 GUI 内 MCP 服务 |
 | GUI 无 MCP 项目行 | 单工具可能不写 `project` 表；查库表或改用 `tscan_scan` |
 | 测绘/子域无结果 | 检查 `config.yaml` 中 API Key、Engines |
+| `ak_verify` 失败 / valid=false | 核对 `kind` 与字段映射；OSS/云主机要 `provider`；MinIO 要 `ext_json.endpoint`；钉钉专属要 `domain`；绿盟 UTS 要 `base_url`；海康 isecure 要 `host` |
 | 结果与 GUI 不一致 | 共用同一 `config.yaml` / `config.db` |
 
 ## MCP 不可用时的 CLI

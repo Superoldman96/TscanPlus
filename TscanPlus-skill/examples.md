@@ -2,7 +2,7 @@
 
 以下示例适用于任何能调用 TscanPlus MCP 工具的 AI 助手。参数语义对齐 **TscanClient** / **TscanPlus CLI**（`-m` 八大模块）。执行前须确认**授权**。
 
-**模块对照：** `port`→`ip_scan`，`url`→`url_scan`，`poc`→`poc_scan`，`crack`→`pwd_crack`，`dir`→`dir_scan`，`js`→`js_scan`，`domain`→`subdomain_scan`，`cyber`→`cyber_search`，多模块联动→`tscan_scan`。
+**模块对照：** `port`→`ip_scan`，`url`→`url_scan`，`poc`→`poc_scan`，`crack`→`pwd_crack`，`dir`→`dir_scan`，`js`→`js_scan`，`domain`→`subdomain_scan`，`cyber`→`cyber_search`，多模块联动→`tscan_scan`，AK 泄露验证→`ak_verify`。
 
 ---
 
@@ -690,7 +690,154 @@ fresh_project: true
 
 ---
 
-## 十四、CLI 批量对照（无 MCP 时）
+## 十四、AK 泄露 API 验证 `ak_verify`（GUI AK管理）
+
+对齐 GUI「AK管理」：用云厂商 API 验证泄露的 AccessKey/SecretKey 是否仍可用。
+
+### 示例 14-1：验证阿里云 OSS AK
+
+**用户：** 发现一组疑似阿里云 AK，帮我验证是否还能用。
+
+```yaml
+tool: ak_verify
+kind: "oss"
+provider: "aliyun"
+access_key: "LTAI5txxxxxxxx"
+secret_key: "xxxxxxxx"
+include_details: true
+result_limit: 50
+```
+
+**汇报：** `data.valid`、`data.bucket_count`、`data.buckets`（name/region）。不要完整回显 SecretKey。
+
+### 示例 14-2：验证腾讯云主机 AK
+
+**用户：** 这组腾讯云 SecretId/SecretKey 能列出云主机吗？
+
+```yaml
+tool: ak_verify
+kind: "server"
+provider: "tencent"
+access_key: "AKIDxxxxxxxx"
+secret_key: "xxxxxxxx"
+include_details: true
+```
+
+**汇报：** `data.valid`、`data.region_count`、`data.instance_count`、`data.instances` 摘要。
+
+### 示例 14-3：MinIO（需 endpoint）
+
+```yaml
+tool: ak_verify
+kind: "oss"
+provider: "minio"
+access_key: "minioadmin"
+secret_key: "minioadmin"
+ext_json: '{"endpoint":"http://10.0.0.8:9000"}'
+```
+
+### 示例 14-4：STS 临时凭据
+
+```yaml
+tool: ak_verify
+kind: "oss"
+provider: "aliyun"
+access_key: "STS.NTxxxxx"
+secret_key: "xxxxx"
+session_token: "CAISxxxx..."
+credential_type: "sts"
+```
+
+### 示例 14-5：微信公众号 / 企业微信
+
+```yaml
+tool: ak_verify
+kind: "wechat"
+mode: "oa"          # oa | mini | work
+access_key: "wx...."
+secret_key: "...."
+```
+
+### 示例 14-6：钉钉 / 飞书
+
+```yaml
+# 钉钉
+tool: ak_verify
+kind: "dingtalk"
+mode: "standard"
+access_key: "ding...."
+secret_key: "...."
+
+# 飞书
+tool: ak_verify
+kind: "feishu"
+access_key: "cli_...."
+secret_key: "...."
+```
+
+### 示例 14-7：地图 API Key
+
+```yaml
+tool: ak_verify
+kind: "map"
+access_key: "高德/天地图/百度 Key"
+service: "amap_geocode"
+origin: "北京市"
+```
+
+### 示例 14-8：海康萤石 / 听云 / 百度人脸 / 绿盟
+
+```yaml
+# 萤石
+tool: ak_verify
+kind: "hikys"
+provider: "ys7"
+access_key: "AppKey"
+secret_key: "AppSecret"
+
+# 听云
+tool: ak_verify
+kind: "tingyun"
+host: "https://xxx.tingyun.com"
+access_key: "ApiKey"
+secret_key: "SecretKey"
+
+# 百度人脸
+tool: ak_verify
+kind: "baiduface"
+access_key: "ApiKey"
+secret_key: "SecretKey"
+
+# 绿盟 UTS
+tool: ak_verify
+kind: "nsfocus"
+mode: "uts"
+base_url: "https://scanner.example.com"
+access_key: "admin"
+secret_key: "password"
+```
+
+**响应示例（有效）：**
+
+```json
+{
+  "success": true,
+  "message": "ak_verify: OSS 凭据有效，共 3 个存储桶",
+  "data": {
+    "kind": "oss",
+    "provider": "aliyun",
+    "valid": true,
+    "bucket_count": 3,
+    "buckets": [
+      {"name": "example-bucket", "region": "cn-hangzhou"}
+    ]
+  }
+}
+```
+
+---
+
+## 十五、CLI 批量对照（无 MCP 时）
 
 ```bash
 # C 段全面（慎用范围）

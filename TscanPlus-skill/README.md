@@ -39,11 +39,28 @@ tscanplus-mcp-skill/
 ## 各宿主如何引用
 
 
-### Claude Desktop
+### Claude Desktop / Claude Code
 
 **Skill：** 从 zip 解压得到 `SKILL.md`，将「授权」至「排错」章节复制到 **Settings → Profile → Custom Instructions**（无内置 Skill 目录，只能手工粘贴）。
 
-**MCP：** 在 `claude_desktop_config.json` 的 `mcpServers` 中加入 `stdio` 或 `url`（可参考 `mcp-config-example.json`），修改后重启应用。
+**MCP（推荐用 CLI，避免手改配置文件出错）：**
+
+```bash
+# stdio（把路径换成本机 TscanPlus 绝对路径）
+claude mcp add --transport stdio tscanplus-stdio -- "C:\Users\test\TscanPlus\TscanPlus_Win_Amd64.exe" mcp stdio
+
+# Streamable HTTP（需先启动：TscanPlus mcp serve -listen 127.0.0.1:8088）
+claude mcp add --transport http tscanplus-http http://127.0.0.1:8088/mcp
+```
+
+macOS / Linux 示例：
+
+```bash
+claude mcp add --transport stdio tscanplus-stdio -- "/绝对路径/TscanPlus" mcp stdio
+claude mcp add --transport http tscanplus-http http://127.0.0.1:8088/mcp
+```
+
+也可手改 `claude_desktop_config.json` 的 `mcpServers`（参考 `mcp-config-example.json`），但易因 JSON 格式错误导致 MCP 加载失败，优先用上面的 `claude mcp add`。
 
 ### VS Code / JetBrains 等（支持 MCP 的扩展）
 
