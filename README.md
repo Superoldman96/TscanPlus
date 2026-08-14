@@ -330,21 +330,22 @@ Windows运行时依赖 [Microsoft WebView2](https://developer.microsoft.com/en-u
 
 为了"无影(TscanPlus)"的Poc检测更全面、精准，能形成良性生态，新增key认证功能。
 
-经过key认证后，可使用所有内置POC，未认证用户只能使用420个POC，其他功能均可正常使用。
+经过key认证后，可使用所有内置POC，未认证用户只能使用600多个POC，其他功能均可正常使用。
 
 <div align=center><img src=images/image-20240721003109091.png width=80% ></div>
 
-通过key认证后，可使用所有内置的1300个poc。
+通过key认证后，可使用所有内置的8800个poc。
 
-<div align=center><img src=images/image-20240721012102311.png width=80% ></div>
+
+<div align=center><img src=images/image-20260814141622590.png width=80% ></div>
 
 **获取Key的三条途径:**
 
-（1）在Poc平台提交3个Poc后可获得3个Key，之后每多提交一个Poc可多获得一个Key。
+（1）在交流群或Github Issue中提交一个有效Bug，Bug修复后可获得一个Key。
 
-（2）在交流群或Github Issue中提交一个有效Bug，Bug修复后可获得一个Key。
+（2）加入星球可直接获得3个Key，每隔三个月可重置一次key，之后就算星球不续费也可以一直使用和重置。
 
-（3）加入星球可直接获得3个Key，每隔三个月可重置一次key，之后每提交一个Poc可多获得一个Key。
+（3）为防范闲鱼各种倒卖key的情况，推出闲鱼正版授权，可在闲鱼搜索用户『网络安全小书童』。
 
 **关于Key认证问题**
 
@@ -510,7 +511,10 @@ tidesec.com.cn
 
 #### 8、POC检测
 
-TscanPlus内置了部分POC，并进行了Level分类，Level1是最常见、使用频率最高的POC，Level2是较通用的POC，Level3为不太常见POC。
+TscanPlus内置了市面上常见的PoC，截至2026年8月内置PoC总数为8800+，其中常见国产OA和框架PoC内置数量2300+：
+用友PoC(430个)、泛微PoC(229个)、金和PoC(168个)、 万户PoC(86个)、通达PoC(81个)、亿赛通PoC(82个)、海康PoC(75个)、大华PoC(92个)、致远PoC(62个)、锐捷PoC(56个)、蓝凌PoC(69个)、金蝶PoC(46个)、畅捷通PoC(48个)、宏景PoC(57个)、红帆PoC(28个)、帆软PoC(24个)、深信服PoC(43个)、SpringBoot(42个)、Weblogic(24个)、Struts2(23个)。
+
+**TscanPlus的PoC引擎已切换为Nuclei，PoC格式与Nuclei相同**，自行编写PoC时，可参考官方格式 https://github.com/projectdiscovery/nuclei-templates
 
 **【任务配置】**
 
@@ -518,30 +522,62 @@ URL可导入txt文件，也可自行输入，必须是HTTP/HTTPS为前缀的URL�
 
 比较重要的一个选项是“POC匹配指纹”，默认开启这个选项，这时会根据指纹信息匹配POC，如匹配不到POC则不检测。关闭该选项后，会对所有选择的POC进行测试。
 
-POC选项可指定外部POC文件或POC文件夹，在后面输入POC的绝对路径，如C:\POC，但导入的POC无法和指纹进行匹配，默认会把导入的POC全跑一遍。
+POC选项可指定外部POC文件或POC文件夹，在后面输入POC的绝对路径，如C:\POC，当开启“POC匹配指纹“时，导入的POC也会和指纹进行匹配，默认会把导入的POC全跑一遍。
 
-外部POC可支持Xray或Xray或同样格式的POC，POC编写可参考：https://poc.xray.cool/ 或 https://phith0n.github.io/xray-poc-generation/
+**【OOB配置】**
+
+无影因为使用了Nuclei的PoC引擎，所以**OOB回连必须使用Interactsh才能自动回连匹配**，其他dnslog平台不支持自动匹配。
+
+如果你个人只是偶尔用下OOB，可以直接使用官方OOB平台：`oast.pro,oast.live,oast.site,oast.online,oast.fun,oast.me`
+
+但官方OOB可能被杀软或防火墙拦截，另外因为是国外站点有时候网络延迟比较高，这也可能导致误报或漏报。
+
+用官方OOB，你可以从 `oast.pro,oast.live,oast.site,oast.online,oast.fun,oast.me` 这八个官方OOB中选一个就可以，比如如下配置：
+
+<div align=center><img src=images/image-20260814143020273.png width=80% ></div>
+
+官方OOB管理web地址 https://app.interactsh.com/ ，在这里你也可以自建子OOB，还能看到你的回连情况。
+
+如果你个人用OOB比较多，或者担心用国外OOB存在安全问题，也可以根据下方流程自建Interactsh，Interactsh是为nuclei专门打造的dnslog服务。
+
+1、下载二进制文件（必须使用>=1.3.0版本，不兼容低版本OOB）
+
+```
+wget https://github.com/projectdiscovery/interactsh/releases/download/v1.3.1/interactsh-server-linux-amd64.tar.gz tar -xzf interactsh-server-linux-amd64.tar.gz
+```
+
+2、配置域名和 DNS
+
+假设你的域名为 `oob.example.com`，服务器 IP 为 `1.2.3.4`。
+添加 A 记录：`oob.example.com` 指向 `1.2.3.4`。
+添加 NS 记录：`*.oob.example.com` 指向 `oob.example.com`
+
+3、启动 Interactsh 服务器
+
+```
+./interactsh-server -domain oob.example.com -ip 1.2.3.4
+```
+
+启动成功后，在无影的「Interactsh URL」填写相应域名（如 `http://oob.example.com`）；若服务端启用了 Token，将「Interactsh Token」填为与启动参数一致的值。
+
+
 
 **【自定义poc】**
 
-Poc检测可直接调用Nuclei、Xray、Afrog等外部POC工具，并可对各工具的poc进行自定义。
+Poc检测可直接调用Xray、Afrog等外部POC工具，并可对各工具的poc进行自定义。
 
 在开启“Poc匹配指纹”功能后，程序会根据目标指纹对外置poc进行模糊匹配，之后再进行poc检测，可大大减少poc检测发包量，缩减检测时间。
 
 <div align=center><img src=images/image-20240417162352536.png width=80% ></div>
 
-Nuclei的poc会默认下载到用户文件夹下的nuclei-templates目录，本程序会自动识别该目录，所以想在Nuclei中使用“Poc匹配指纹”功能时可不指定Nuclei的Poc。
-
 但Afrog的Poc默认是内置在程序中，所以如果想在Afrog中使用“Poc匹配指纹”功能，需从https://github.com/zan8in/afrog/tree/main/pocs/afrog-pocs 中下载poc文件，然后在程序中指定Poc所在目录，即可在Afrog中使用“Poc匹配指纹”功能。
 
-对指纹匹配Poc的规则进行了优化和完善，在防止漏报的情况下，尽可能的减小poc检测数量。添加poc检测级别过滤器，可有效避免nuclei、afrog工具默认扫描时的大量info类信息。
+对指纹匹配Poc的规则进行了优化和完善，在防止漏报的情况下，尽可能的减小poc检测数量。添加poc检测级别过滤器，可有效避免xray、afrog工具默认扫描时的大量info类信息。
 
 <div align=center><img src=images/image-20240617182603002.png width=80% ></div>
 
 
 
-无影(TscanPlus)的自定义POC功能也已经完善，可兼容Xray Poc 1.0版和Fscan的Poc格式。
-自行编写Poc时，可使用工具进行测试编写：https://github.com/phith0n/xray-poc-generation 
 
 **【扫描结果】**
 
