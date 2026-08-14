@@ -526,7 +526,7 @@ POC选项可指定外部POC文件或POC文件夹，在后面输入POC的绝对�
 
 **【OOB配置】**
 
-无影因为使用了Nuclei的PoC引擎，所以**OOB回连必须使用Interactsh才能自动回连匹配**，其他dnslog平台不支持自动匹配。
+无影因为使用了Nuclei的PoC引擎，所以**OOB回连必须使用Interactsh才能自动回连匹配**，Interactsh是为nuclei专门打造的dnslog服务，其他dnslog平台不支持nuclei的自动回连。
 
 如果你个人只是偶尔用下OOB，可以直接使用官方OOB平台：`oast.pro,oast.live,oast.site,oast.online,oast.fun,oast.me`
 
@@ -538,7 +538,7 @@ POC选项可指定外部POC文件或POC文件夹，在后面输入POC的绝对�
 
 官方OOB管理web地址 https://app.interactsh.com/ ，在这里你也可以自建子OOB，还能看到你的回连情况。
 
-如果你个人用OOB比较多，或者担心用国外OOB存在安全问题，也可以根据下方流程自建Interactsh，Interactsh是为nuclei专门打造的dnslog服务。
+如果你个人用OOB比较多，或者担心用国外OOB存在安全问题，也可以根据下方流程自建Interactsh服务。
 
 1、下载二进制文件（必须使用>=1.3.0版本，不兼容低版本OOB）
 
