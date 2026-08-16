@@ -980,7 +980,4 @@ In some cases, after opening the program, users may only see the middle part of 
 For any other software bugs, please report them on the GitHub Issues page or the Knowledge Planet. These will be addressed and fixed in future updates.
 
 
-### Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=TideSec/TscanPlus&type=Date)](https://star-history.com/#TideSec/TscanPlus&Date)
 

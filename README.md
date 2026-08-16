@@ -1160,10 +1160,6 @@ apt-get remove libturbojpeg0
 **8、其他软件bug可提到Github的Issue或知识星球中，后续会逐一修复。**
 
 
-### Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=TideSec/TscanPlus&type=Date)](https://star-history.com/#TideSec/TscanPlus&Date)
-
 [url-docen]: README_EN.md
 
 [url-TscanClient]: TscanClient.md
